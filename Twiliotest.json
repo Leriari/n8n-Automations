@@ -1,0 +1,196 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -944,
+        48
+      ],
+      "id": "ac45fa16-60d7-485e-b61a-e13fbdeb4f51",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a reminder assistant for class schedules. Please generate a personalized WhatsApp reminder message for the user based on the following details:\n\n- Class Name: [Class Name]\n- Date: [Class Date]\n- Time: [Class Time]\n- Link: [Class Link]\n\nThe message should be friendly, polite, and professional. The message should remind the user to join the class at the specified time and include the meeting link. The tone should be clear and helpful, ensuring the user knows exactly when and where to join the class.\n\nExample:\n\n\"Hello! Just a reminder that your [Class Name] class will start on [Class Date] at [Class Time]. You can join using this link: [Class Link]. See you there!\"\nuse this timestamp to compare the current date and time to only select one that is related to the ones in the sheet \n{{ $('Schedule Trigger').item.json.timestamp }},{{ $('Schedule Trigger').item.json['Day of week'] }}\n---\n\nNow, use the following information to generate the message:\n\n- [Class Name] :{{ $json.NAME }}\n- [Class Date] : {{ $json.DATE }}\n- [Class Time] : {{ $json.TIME }}\n- [Class Link] : {{ $json.LINK }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        48
+      ],
+      "id": "1998d20c-0568-4f4f-bad6-2bde131ce280",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        256
+      ],
+      "id": "c14f4715-c2d5-43a4-a415-0e590acb3ae0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "2ZgJQL0yaIoUZezU",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "20"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        256
+      ],
+      "id": "0a55332c-8233-44c7-aff0-60c5e61cac2f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "from": "+14155238886",
+        "to": "+254700424242",
+        "toWhatsapp": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        656
+      ],
+      "id": "be136981-0d19-480c-a0b6-26d3ac7cc9d9",
+      "name": "Send an SMS/MMS/WhatsApp message",
+      "credentials": {
+        "twilioApi": {
+          "id": "pM2JBBC6kmCtGBdW",
+          "name": "Twilio account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1-v9OkC9xzjmuSoLHku8VvKNYm3hWp2cvjyf1u836JtM",
+          "mode": "list",
+          "cachedResultName": "AI TEXTS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-v9OkC9xzjmuSoLHku8VvKNYm3hWp2cvjyf1u836JtM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-v9OkC9xzjmuSoLHku8VvKNYm3hWp2cvjyf1u836JtM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -736,
+        48
+      ],
+      "id": "f3b2994a-4f13-4611-9fb6-60e1ccc8b75d",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eRbdzlDmxObVBlOu",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "48fbdb8d-37e2-4dd4-9533-2473f2bcd31b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "62e81686311e03acc4bf7dba938e453bd32851ac3a7e874a05fa220837b80af1"
+  },
+  "id": "ScuyzPIQE593MIAS",
+  "tags": []
+}
